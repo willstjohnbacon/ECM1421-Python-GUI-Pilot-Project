@@ -1,17 +1,11 @@
 import pyodbc
-
-# import PyQt5
-# from PyQt5 import QtGui
 import sys
-
+from PyQt5 import QtWidgets, uic
 
 def load_metadata():
     with open("metadata.json", "r") as f:
         pass
 
-class Login(object):
-    def __init__(self):
-        pass
 
     def login(self, cursor, username, password):
 
@@ -77,9 +71,9 @@ class StockItems(object):
         stock_categories = cursor.fetchall()
 
         cursor.execute(
-            """SELECT stock.id, 
-                            stock.itemname, 
-                            stock.itemunit, 
+            """SELECT stock.id,
+                            stock.itemname,
+                            stock.itemunit,
                             stock.itemprice,
                             category.stockcategory
 	                    FROM StockItem stock
@@ -106,9 +100,9 @@ class StockItems(object):
             if category == c[1]:
                 category = c[0]
                 break
-            
+
         cursor.execute("INSERT INTO StockItem (itemname, itemunit, itemprice, categoryid) VALUES ('%(item_name)s', '%(item_unit)s', %(item_price)f, %(category)d);",
-                       {'item_name': item_name, 
+                       {'item_name': item_name,
                         'item_unit': item_unit,
                         'item_price': item_price,
                         'category': category})
@@ -122,7 +116,7 @@ class StockItems(object):
                 category = c[0]
 
         cursor.execute("UPDATE StockItem SET itemname='%(item_name)s', itemunit='%(item_unit)s', itemprice=%(item_price)f,categoryid=%(category)d WHERE id=%(id)d;",
-                       {'item_name': item_name, 
+                       {'item_name': item_name,
                         'item_unit': item_unit,
                         'item_price': item_price,
                         'category': category,
@@ -131,7 +125,7 @@ class StockItems(object):
 
     def delete(self,  id):
 
-        cursor.execute("DELETE FROM StockItem WHERE id=%(id)d;", 
+        cursor.execute("DELETE FROM StockItem WHERE id=%(id)d;",
                        {"id": id})
         connection.commit()
 
