@@ -2,10 +2,12 @@ import sys
 import os
 import time
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QGridLayout, QSizePolicy
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 import pyodbc
+
+from StockCategories import Ui_Form
 
 server = 'ecm1421.database.windows.net'
 database = 'NymptonFoodHub'
@@ -13,35 +15,12 @@ username = 'Snakehead181'
 password = '{Mypass@word123}'
 driver = '{ODBC Driver 17 for SQL Server}'
 
-class StockCategory(QWidget):
+
+class StockCategory(QtWidgets.QWidget):
     def __init__(self):
-        super().__init__()
-        self.setWindowTitle('Stock Categories')
-        self.window_width, self.window_height = 2000, 1250
-        self.setFixedSize(self.window_width, self.window_height)
-
-        layout = QGridLayout()
-        self.setLayout(layout)
-
-        stock_categories_table = QtWidgets.QTableWidget()
-        stock_categories_table.setRowCount(7)
-        stock_categories_table.setColumnCount(3)
-        layout.addWidget(stock_categories_table)
-
-        # Connect to Azure Database
-        connection = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};SERVER=tcp:ecm1421.database.windows.net;PORT=1433;DATABASE=NymptonFoodHub;UID=Snakehead181;PWD=Mypass@word123')
-        query = "SELECT * FROM StockCategory"
-        result = connection.execute(query)
-        stock_categories_table.setRowCount(0)
-
-        # Loop through the data in the database and add the items to the table
-        for row_number, row_data in enumerate(result):
-            stock_categories_table.insertRow(row_number)
-            for column_number, data in enumerate(row_data):
-                stock_categories_table.setItem(row_number, column_number, QtWidgets.QTableWidgetItem(str(data)))
-
-        connection.close()
+        super().__init__()  # Call the inherited classes __init__ method
+        uic.loadUi('StockCategories.ui', self)  # Load the .ui file
+        self.show()  # Show the GUI
 
 
 class LoginWindow(QWidget):
@@ -88,23 +67,27 @@ class LoginWindow(QWidget):
         username = self.lineEdits['Username'].text()
         password = self.lineEdits['Password'].text()
 
-
         # TODO: Link database to here
         query = QSqlQuery()
-        query.prepare('SELECT * FROM sysusers WHERE Username=:username')
+        query.prepare('SELECT * FROM Users WHERE Username=:username')
         query.bindValue(':username', username)
         query.exec()
 
         if query.first() or username == 'nfhtest':
             if query.value('Password') == password or password == 'nfhtestpwd':
                 time.sleep(1)
-                self.mainApp = StockCategory()
-                self.mainApp.show()
+                self.openWindow()
                 self.close()
             else:
                 self.status.setText('Password is incorrect')
         else:
             self.status.setText('Username is not found')
+
+    def openWindow(self):
+        self.window = QtWidgets.QWidget()
+        self.ui = Ui_Form()
+        self.ui.setupUi(self.window)
+        self.window.show()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -119,6 +102,7 @@ if __name__ == '__main__':
 
     loginWindow = LoginWindow()
     loginWindow.show()
+    app.exec()
 
     try:
         sys.exit(app.exec())
